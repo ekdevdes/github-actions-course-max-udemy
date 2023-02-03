@@ -1,0 +1,33 @@
+name: "Build App and Upload Artifact"
+
+# maybe pull_request in the future
+on: workflow_dispatch
+
+jobs:
+  build_app:
+    runs-on: macos-latest # lets see how arm builds go...
+    steps:
+      - name: "Checkout Repo"
+        uses: actions/checkout@v3
+      - name: "Install Node"
+        uses: actions/setup-node@v3
+        with:
+          node-version: "16"
+      - name: "Cache Dependencies"
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: npm-${{ hashFiles("package-lock.json") }}
+          restore-keys: npm-
+      - name: "Install Dependencies"
+        run: npm ci
+      - name: "Build the App"
+        run: npm run build
+      - name: "Upload Build Artifacts"
+        uses: actions/upload-artifact@v3
+        with:
+          name: built-app
+          path: | # include the package.json so we can see what version of deps we used
+            dist
+            package.json 
+
